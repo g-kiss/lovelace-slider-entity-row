@@ -12,6 +12,9 @@ export interface ControllerConfig {
   attribute?: string;
   grow?: boolean;
   dir?: string;
+  cust_service_name?: string;
+  cust_attrib_index?: number;
+  cust_type?: string;
 }
 
 export abstract class Controller {

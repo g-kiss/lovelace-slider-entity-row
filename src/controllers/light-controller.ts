@@ -32,6 +32,18 @@ export class LightController extends Controller {
   }
 
   get _value() {
+    if (this.stateObj) {
+      if (this._config.cust_service_name) {
+        if (this._config.cust_attrib_index != undefined)
+          return Math.round(
+            this.stateObj.attributes[this.attribute][
+              this._config.cust_attrib_index
+            ]
+          );
+        return Math.round(this.stateObj.attributes[this.attribute]);
+      }
+    }
+
     if (!this.stateObj || this.stateObj.state !== "on") return 0;
     const attr = this.stateObj.attributes;
     switch (this.attribute) {
@@ -81,6 +93,10 @@ export class LightController extends Controller {
   }
 
   get _min() {
+    if (this._config.cust_service_name) {
+      if (this._config.cust_type == "color_temp")
+        return this.stateObj ? this.stateObj.attributes.min_mireds : 0;
+    }
     switch (this.attribute) {
       case "color_temp":
         return this.stateObj ? this.stateObj.attributes.min_mireds : 0;
@@ -88,7 +104,18 @@ export class LightController extends Controller {
         return 0;
     }
   }
+
   get _max() {
+    if (this._config.cust_service_name) {
+      switch (this._config.cust_type) {
+        case "rgb":
+        case "brightness":
+          return 255;
+        case "color_temp":
+          return this.stateObj ? this.stateObj.attributes.max_mireds : 0;
+      }
+    }
+
     switch (this.attribute) {
       case "color_temp":
         return this.stateObj ? this.stateObj.attributes.max_mireds : 0;
@@ -121,7 +148,38 @@ export class LightController extends Controller {
     let attr = this.attribute;
     let on = true;
     let _value;
+    let sdata;
+    let servicename_parts;
+
+    if (this._config.cust_service_name) {
+      servicename_parts = this._config.cust_service_name.split(".");
+      if (this._config.cust_attrib_index != undefined) {
+        sdata = this.stateObj.attributes[this.attribute];
+        sdata[this._config.cust_attrib_index] = value;
+      } else sdata = value;
+      this._hass.callService(servicename_parts[0], servicename_parts[1], {
+        entity_id: this.stateObj.entity_id,
+        [this.attribute]: sdata,
+      });
+      return;
+    }
+
     switch (attr) {
+      //   });
+      //   return;
+      // case "nl_night_brightness":
+      //   this._hass.callService("light", "night_light_set_night_light", {
+      //     entity_id: this.stateObj.entity_id,
+      //     ["brightness"]: value,
+      //   });
+      //   return;
+      // case "nl_night_color_temp":
+      //   this._hass.callService("light", "night_light_set_night_light", {
+      //     entity_id: this.stateObj.entity_id,
+      //     ["color_temp"]: value,
+      //   });
+      //   return;
+
       case "brightness":
       case "brightness_pct":
         value =
@@ -207,6 +265,7 @@ export class LightController extends Controller {
   }
 
   get hasSlider() {
+    if (this._config.cust_service_name) return true;
     const attr = this.stateObj.attributes;
     const support_temp =
       attr.supported_features & 2 ||

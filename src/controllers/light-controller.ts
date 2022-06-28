@@ -165,21 +165,6 @@ export class LightController extends Controller {
     }
 
     switch (attr) {
-      //   });
-      //   return;
-      // case "nl_night_brightness":
-      //   this._hass.callService("light", "night_light_set_night_light", {
-      //     entity_id: this.stateObj.entity_id,
-      //     ["brightness"]: value,
-      //   });
-      //   return;
-      // case "nl_night_color_temp":
-      //   this._hass.callService("light", "night_light_set_night_light", {
-      //     entity_id: this.stateObj.entity_id,
-      //     ["color_temp"]: value,
-      //   });
-      //   return;
-
       case "brightness":
       case "brightness_pct":
         value =

@@ -40,7 +40,7 @@ export class LightController extends Controller {
               this._config.cust_attrib_index
             ]
           );
-        return Math.round(this.stateObj.attributes[this.attribute]);
+        return this.stateObj.attributes[this.attribute];
       }
     }
 

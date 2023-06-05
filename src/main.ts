@@ -1,4 +1,5 @@
-import { LitElement, html, css, property } from "lit-element";
+import { LitElement, html, css } from "lit";
+import { property } from "lit/decorators.js";
 
 import { getController } from "./controllers/get-controller";
 import { Controller, ControllerConfig } from "./controllers/controller";
@@ -22,7 +23,7 @@ class SliderEntityRow extends LitElement {
 
   async resized() {
     await this.updateComplete;
-    if (!this.shadowRoot) return;
+    if (!this.shadowRoot || !this.parentElement) return;
     this.hide_state = this._config.full_row
       ? this.parentElement.clientWidth <= 180
       : this.parentElement.clientWidth <= 335;
@@ -73,6 +74,16 @@ class SliderEntityRow extends LitElement {
       <div class="wrapper" @click=${(ev) => ev.stopPropagation()}>
         ${showSlider
           ? html`
+              ${this._config.colorize && c.background
+                ? html`
+                    <style>
+                      ha-slider {
+                        --paper-slider-container-color: ${c.background};
+                        --paper-progress-active-color: transparent;
+                      }
+                    </style>
+                  `
+                : ""}
               <ha-slider
                 .min=${c.min}
                 .max=${c.max}
@@ -104,10 +115,28 @@ class SliderEntityRow extends LitElement {
 
     if (this._config.full_row)
       if (this._config.hide_when_off && c.isOff) return html``;
-      else return content;
+      else if (this._config.show_icon === true) {
+        const conf = this._config as any;
+        return html`
+          <div class="wrapper">
+            <state-badge
+              .hass=${this.hass}
+              .stateObj=${c.stateObj}
+              .overrideIcon=${conf.icon}
+              .overrideImage=${conf.image}
+              .stateColor=${conf.state_color}
+            ></state-badge>
+            ${content}
+          </div>
+        `;
+      } else return content;
 
     return html`
-      <hui-generic-entity-row .hass=${this.hass} .config=${this._config}>
+      <hui-generic-entity-row
+        .hass=${this.hass}
+        .config=${this._config}
+        .catchInteraction=${false}
+      >
         ${content}
       </hui-generic-entity-row>
     `;
@@ -119,7 +148,7 @@ class SliderEntityRow extends LitElement {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        flex: 100;
+        flex: 7;
         height: 40px;
       }
       .state {

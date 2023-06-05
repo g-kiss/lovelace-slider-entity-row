@@ -9,6 +9,17 @@ export class CoverController extends Controller {
   }
 
   get _value() {
+    if (this.stateObj) {
+      if (this._config.cust_service_name) {
+        if (this._config.cust_attrib_index != undefined)
+          return Math.round(
+            this.stateObj.attributes[this.attribute][
+              this._config.cust_attrib_index
+            ]
+          );
+        return this.stateObj.attributes[this.attribute];
+      }
+    }
     switch (this.attribute) {
       case "position":
         return this.stateObj.state === "closed"
@@ -22,6 +33,21 @@ export class CoverController extends Controller {
   }
 
   set _value(value) {
+    let sdata;
+    let servicename_parts;
+    if (this._config.cust_service_name) {
+      servicename_parts = this._config.cust_service_name.split(".");
+      if (this._config.cust_attrib_index != undefined) {
+        sdata = this.stateObj.attributes[this.attribute];
+        sdata[this._config.cust_attrib_index] = value;
+      } else sdata = value;
+      this._hass.callService(servicename_parts[0], servicename_parts[1], {
+        entity_id: this.stateObj.entity_id,
+        [this.attribute]: sdata,
+      });
+      return;
+    }
+
     switch (this.attribute) {
       case "position":
         this._hass.callService("cover", "set_cover_position", {
@@ -58,6 +84,7 @@ export class CoverController extends Controller {
   }
 
   get hasSlider() {
+    if (this._config.cust_service_name) return true;
     switch (this.attribute) {
       case "position":
         if ("current_position" in this.stateObj.attributes) return true;

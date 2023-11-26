@@ -8,18 +8,22 @@ import { InputSelectController } from "./input-select-controller";
 import { NumberController } from "./number-controller";
 import { WaterHeaterController } from "./water-heater-controller";
 import { HumidifierController } from "./humidifier-controller";
+import { TimerController } from "./timer-controller";
+
+export const controllers = {
+  light: LightController,
+  media_player: MediaPlayerController,
+  climate: ClimateController,
+  water_heater: WaterHeaterController,
+  cover: CoverController,
+  fan: FanController,
+  input_number: InputNumberController,
+  input_select: InputSelectController,
+  number: NumberController,
+  humidifier: HumidifierController,
+  timer: TimerController,
+};
 
 export function getController(domain: string) {
-  return {
-    light: LightController,
-    media_player: MediaPlayerController,
-    climate: ClimateController,
-    water_heater: WaterHeaterController,
-    cover: CoverController,
-    fan: FanController,
-    input_number: InputNumberController,
-    input_select: InputSelectController,
-    number: NumberController,
-    humidifier: HumidifierController,
-  }[domain];
+  return controllers[domain];
 }

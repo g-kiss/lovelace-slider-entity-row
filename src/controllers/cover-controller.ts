@@ -1,8 +1,11 @@
 import { Controller } from "./controller";
+import { html } from "lit";
 
 export class CoverController extends Controller {
   _max;
   _min;
+
+  static allowed_attributes = ["position", "tilt"];
 
   get attribute() {
     return this._config.attribute || "position";
@@ -70,9 +73,13 @@ export class CoverController extends Controller {
     switch (this.attribute) {
       case "position":
         if (this.stateObj.state === "closed")
-          return this._hass.localize("component.cover.state._.closed");
+          return this._hass.localize(
+            "component.cover.entity_component._.state.closed"
+          );
         if (this.value === 100)
-          return this._hass.localize("component.cover.state._.open");
+          return this._hass.localize(
+            "component.cover.entity_component._.state.open"
+          );
         return `${this.value} %`;
       case "tilt":
         return `${this.value} %`;
@@ -80,7 +87,15 @@ export class CoverController extends Controller {
   }
 
   get hasToggle() {
-    return false;
+    return true;
+  }
+
+  renderToggle(hass: any) {
+    const stateObj = hass.states[this.stateObj.entity_id];
+    console.log("Toggle", hass);
+    return html`
+    <ha-cover-controls .hass=${hass} .stateObj=${stateObj}></ha-cover_controls>
+    `;
   }
 
   get hasSlider() {

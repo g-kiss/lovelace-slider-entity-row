@@ -1,9 +1,12 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
+import { query } from "lit/decorators/query.js";
 
 import { getController } from "./controllers/get-controller";
 import { Controller, ControllerConfig } from "./controllers/controller";
 import pjson from "../package.json";
+
+import "./editor.ts";
 
 class SliderEntityRow extends LitElement {
   _config: ControllerConfig;
@@ -11,6 +14,7 @@ class SliderEntityRow extends LitElement {
 
   @property() hass: any;
   @property() hide_state: boolean;
+  @query("ha-slider") _slider?;
 
   setConfig(config: ControllerConfig) {
     this._config = config;
@@ -18,19 +22,41 @@ class SliderEntityRow extends LitElement {
     const domain = config.entity.split(".")[0];
     const ctrlClass = getController(domain);
     if (!ctrlClass) throw new Error(`Unsupported entity type: ${domain}`);
-    this.ctrl = new ctrlClass(config);
+    this.ctrl = new ctrlClass(config, this);
+  }
+
+  static getConfigElement() {
+    console.log("GetConfigElement");
+    return document.createElement("slider-entity-row-editor");
   }
 
   async resized() {
     await this.updateComplete;
     if (!this.shadowRoot || !this.parentElement) return;
     this.hide_state = this._config.full_row
-      ? this.parentElement.clientWidth <= 180
-      : this.parentElement.clientWidth <= 335;
+      ? this.parentElement?.clientWidth <= 180
+      : this.parentElement?.clientWidth <= 335;
     return;
   }
 
   async firstUpdated() {
+    await this.resized();
+  }
+
+  async updated() {
+    if (!this._slider) return;
+    await this._slider.updateComplete;
+    if (this._slider.shadowRoot.querySelector("style.slider-entity-row"))
+      return;
+    const styleEl = document.createElement("style");
+    styleEl.classList.add("slider-entity-row");
+    styleEl.innerHTML = `.container .track::before{background: var(--_inactive-track-color);}
+    .container .track::after{background: var(--_active-track-color);}`;
+    this._slider.shadowRoot?.appendChild(styleEl);
+  }
+
+  async connectedCallback() {
+    super.connectedCallback();
     await this.resized();
   }
 
@@ -79,6 +105,8 @@ class SliderEntityRow extends LitElement {
                     <style>
                       ha-slider {
                         --paper-slider-container-color: ${c.background};
+                        --_inactive-track-color: ${c.background};
+                        --_active-track-color: ${c.background};
                         --paper-progress-active-color: transparent;
                       }
                     </style>
@@ -90,6 +118,7 @@ class SliderEntityRow extends LitElement {
                 .step=${c.step}
                 .value=${c.value}
                 .dir=${dir}
+                labeled
                 pin
                 @change=${(ev) =>
                   (c.value = (

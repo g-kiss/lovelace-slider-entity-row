@@ -11,6 +11,22 @@ const RGB_INDEX = {
 const HS_INDEX = { hue: 0, saturation: 1 };
 
 export class LightController extends Controller {
+  static allowed_attributes = [
+    "brightness_pct",
+    "brightness",
+    "color_temp",
+    "color_temp_mired",
+    "hue",
+    "saturation",
+    "red",
+    "green",
+    "blue",
+    "effect",
+    "white",
+    "cold_white",
+    "warm_white",
+  ];
+
   get attribute() {
     return this._config.attribute || "brightness_pct";
   }
@@ -248,7 +264,9 @@ export class LightController extends Controller {
 
   get string() {
     if (this.stateObj && this.stateObj.state === "off")
-      return this._hass.localize("component.light.state._.off");
+      return this._hass.localize(
+        "component.light.entity_component._.state.off"
+      );
     switch (this.attribute) {
       case "color_temp_mired":
       case "brightness":
